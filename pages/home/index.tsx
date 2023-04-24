@@ -16,23 +16,28 @@ import {
   ChevronDownIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
-import Calendar from "../../components/calendar";
 import SelectClass from "../../components/selectClass";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 const navigation = [
   // { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
   // { name: "Team", href: "#", icon: UsersIcon, current: false },
   // { name: "Projects", href: "#", icon: FolderIcon, current: false },
-  { name: "수업 시작", href: "#", icon: CalendarIcon, current: false },
-  { name: "수업 마침", href: "#", icon: CalendarIcon, current: false },
+  {
+    name: "수업 시작",
+    href: "/modal/startDay",
+    icon: CalendarIcon,
+    current: false,
+  },
+  {
+    name: "수업 마침",
+    href: "/modal/endDay",
+    icon: CalendarIcon,
+    current: false,
+  },
   // { name: "Documents", href: "#", icon: DocumentDuplicateIcon, current: false },
   // { name: "Reports", href: "#", icon: ChartPieIcon, current: false },
-];
-const teams = [
-  { id: 1, name: "Heroicons", href: "#", initial: "H", current: false },
-  { id: 2, name: "Tailwind Labs", href: "#", initial: "T", current: false },
-  { id: 3, name: "Workcation", href: "#", initial: "W", current: false },
 ];
 
 function classNames(...classes: string[]) {
@@ -151,7 +156,7 @@ export default function Layout() {
               <ul role='list' className='-mx-2 space-y-1'>
                 {navigation.map((item) => (
                   <li key={item.name}>
-                    <a
+                    <Link
                       href={item.href}
                       className={classNames(
                         item.current
@@ -170,7 +175,7 @@ export default function Layout() {
                         aria-hidden='true'
                       />
                       {item.name}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -221,7 +226,7 @@ export default function Layout() {
 
           <main className='py-10'>
             <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-              <Calendar />
+              {/* Replace with your content */}
             </div>
           </main>
         </div>

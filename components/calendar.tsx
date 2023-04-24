@@ -1,74 +1,102 @@
-import { Fragment } from "react";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  EllipsisHorizontalIcon,
-  MapPinIcon,
-} from "@heroicons/react/20/solid";
-import { Menu, Transition } from "@headlessui/react";
-
-const days = [
-  { date: "2021-12-27" },
-  { date: "2021-12-28" },
-  { date: "2021-12-29" },
-  { date: "2021-12-30" },
-  { date: "2021-12-31" },
-  { date: "2022-01-01", isCurrentMonth: true },
-  { date: "2022-01-02", isCurrentMonth: true },
-  { date: "2022-01-03", isCurrentMonth: true },
-  { date: "2022-01-04", isCurrentMonth: true },
-  { date: "2022-01-05", isCurrentMonth: true },
-  { date: "2022-01-06", isCurrentMonth: true },
-  { date: "2022-01-07", isCurrentMonth: true },
-  { date: "2022-01-08", isCurrentMonth: true },
-  { date: "2022-01-09", isCurrentMonth: true },
-  { date: "2022-01-10", isCurrentMonth: true },
-  { date: "2022-01-11", isCurrentMonth: true },
-  { date: "2022-01-12", isCurrentMonth: true, isToday: true },
-  { date: "2022-01-13", isCurrentMonth: true },
-  { date: "2022-01-14", isCurrentMonth: true },
-  { date: "2022-01-15", isCurrentMonth: true },
-  { date: "2022-01-16", isCurrentMonth: true },
-  { date: "2022-01-17", isCurrentMonth: true },
-  { date: "2022-01-18", isCurrentMonth: true },
-  { date: "2022-01-19", isCurrentMonth: true },
-  { date: "2022-01-20", isCurrentMonth: true },
-  { date: "2022-01-21", isCurrentMonth: true },
-  { date: "2022-01-22", isCurrentMonth: true, isSelected: true },
-  { date: "2022-01-23", isCurrentMonth: true },
-  { date: "2022-01-24", isCurrentMonth: true },
-  { date: "2022-01-25", isCurrentMonth: true },
-  { date: "2022-01-26", isCurrentMonth: true },
-  { date: "2022-01-27", isCurrentMonth: true },
-  { date: "2022-01-28", isCurrentMonth: true },
-  { date: "2022-01-29", isCurrentMonth: true },
-  { date: "2022-01-30", isCurrentMonth: true },
-  { date: "2022-01-31", isCurrentMonth: true },
-  { date: "2022-02-01" },
-  { date: "2022-02-02" },
-  { date: "2022-02-03" },
-  { date: "2022-02-04" },
-  { date: "2022-02-05" },
-  { date: "2022-02-06" },
-];
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import { DateWithValidation, transformDate } from "../lib/makeDateArray";
+import makeMonthFromNumber from "../lib/makeMonthFromNumber";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { pipe } from "../lib/util";
+import { makeDatesAfterMonth } from "../lib/makeDateArray";
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(" ");
 }
+type CalendarProps = {
+  days: DateWithValidation[];
+  fullYear?: number;
+  month: number;
+};
 
-export default function Calendar() {
+// 월을 바꾸었을 때 달력을 다시 그리기 위한 hook
+function useShiftMonth(initMonth: number, initFullYear: number) {
+  const [step, setStep] = useState<number>(0);
+  const [month, setMonth] = useState(initMonth);
+  const [fullYear, setFullYear] = useState(initFullYear);
+  const moveStep = useCallback(
+    (direction: string) => {
+      if (direction === "left") {
+        setStep(() => step - 1);
+        month - 1 < 0
+          ? (setFullYear(() => fullYear - 1),
+            setMonth(() => (month - 1 + 12) % 12))
+          : setMonth(() => month - 1);
+      } else if (direction === "right") {
+        setStep(() => step + 1);
+        month + 1 > 11
+          ? (setFullYear(() => fullYear + 1),
+            setMonth(() => (month + 1 + 12) % 12))
+          : setMonth(() => month + 1);
+      }
+    },
+    [month, fullYear, step]
+  );
+  const makeDates = useMemo(() => makeDatesAfterMonth(step), [step]);
+  return { makeDates, moveStep, month, fullYear };
+}
+
+export default function Calendar({
+  days: initDays,
+  month: initMonth,
+  fullYear: initFullYear,
+}: CalendarProps) {
+  const [days, setDays] = useState<DateWithValidation[]>(initDays);
+  const { makeDates, moveStep, month, fullYear } = useShiftMonth(
+    initMonth,
+    initFullYear as number
+  );
+  const [selectedDate, setSelectedDate] = useState<number | null>();
+
+  // today 표시하기
+  pipe(
+    () => new Date(),
+    (date: Date) => transformDate(date),
+    (dateForm: string) => days.findIndex((day) => day.date === dateForm),
+    (todayIdx: number) => {
+      if (todayIdx === -1) return;
+      days[todayIdx].isToday = true;
+    }
+  )(null);
+
+  const onClick = (dayIdx: number) => {
+    days.forEach((day) => (day.isSelected = false));
+    dayIdx ? (days[dayIdx].isSelected = true) : null;
+    setSelectedDate(dayIdx);
+  };
+
+  const onClickArrow = (direction: string) => {
+    moveStep(direction);
+  };
+
+  useEffect(() => {
+    setDays(() => makeDates(fullYear, month));
+  }, [month, fullYear, makeDates]);
+
   return (
-    <div className='mt-10 w-96 text-center lg:col-start-8 lg:col-end-13 lg:row-start-1 lg:mt-9 xl:col-start-9'>
+    <div className='mt-10 w-full text-center lg:col-start-8 lg:col-end-13 lg:row-start-1 lg:mt-9 xl:col-start-9'>
+      <div className='mb-1 flex items-center justify-center font-semibold text-gray-900'>
+        {fullYear} 년
+      </div>
       <div className='flex items-center text-gray-900'>
         <button
+          onClick={() => onClickArrow("left")}
           type='button'
           className='-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500'
         >
           <span className='sr-only'>Previous month</span>
           <ChevronLeftIcon className='h-5 w-5' aria-hidden='true' />
         </button>
-        <div className='flex-auto text-sm font-semibold'>January</div>
+        <div className='flex-auto text-sm font-semibold'>
+          {makeMonthFromNumber(month)}
+        </div>
         <button
+          onClick={() => onClickArrow("right")}
           type='button'
           className='-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500'
         >
@@ -88,6 +116,7 @@ export default function Calendar() {
       <div className='isolate mt-2 grid grid-cols-7 gap-px rounded-lg bg-gray-200 text-sm shadow ring-1 ring-gray-200'>
         {days.map((day, dayIdx) => (
           <button
+            onClick={() => onClick(dayIdx)}
             key={day.date}
             type='button'
             className={classNames(

@@ -1,10 +1,22 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { CheckIcon } from "@heroicons/react/24/outline";
+import { DateWithValidation } from "../lib/makeDateArray";
 import Calendar from "./calendar";
+import { useRouter } from "next/router";
 
-export default function Modal() {
+type ModalProps = {
+  days: DateWithValidation[];
+  fullYear?: number;
+  month: number;
+};
+export default function Modal({ fullYear, days, month }: ModalProps) {
   const [open, setOpen] = useState(true);
+  const router = useRouter();
+  const onClick = () => {
+    setOpen(false);
+    router.push("/");
+  };
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -33,14 +45,14 @@ export default function Modal() {
               leaveTo='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
             >
               <Dialog.Panel className='relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6'>
-                <Calendar />
+                <Calendar {...{ fullYear, days, month }} />
                 <div className='mt-5 sm:mt-6'>
                   <button
                     type='button'
                     className='inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-                    onClick={() => setOpen(false)}
+                    onClick={onClick}
                   >
-                    Go back to dashboard
+                    돌아가기
                   </button>
                 </div>
               </Dialog.Panel>
