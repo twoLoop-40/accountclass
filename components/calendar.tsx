@@ -77,13 +77,13 @@ export default function Calendar() {
         </button>
       </div>
       <div className='mt-6 grid grid-cols-7 text-xs leading-6 text-gray-500'>
+        <div>Sun</div>
         <div>Mon</div>
         <div>Tue</div>
         <div>Wed</div>
         <div>Thu</div>
         <div>Fri</div>
         <div>Sat</div>
-        <div>Sun</div>
       </div>
       <div className='isolate mt-2 grid grid-cols-7 gap-px rounded-lg bg-gray-200 text-sm shadow ring-1 ring-gray-200'>
         {days.map((day, dayIdx) => (
