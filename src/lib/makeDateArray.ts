@@ -12,7 +12,7 @@ function getFirstDay({
 }
 
 // date => Sunday
-function getStartingDay(date: Date): Date {
+function getBeginningSunday(date: Date): Date {
   return new Date(
     date.getFullYear(),
     date.getMonth(),
@@ -46,7 +46,7 @@ function makeDateArrayFromStartingMonth(fullYear: number, month: number) {
   const dateArray: Date[] = pipe(
     getFirstDay,
     (firstDay: Date) => {
-      const startingDay = getStartingDay(firstDay);
+      const startingDay = getBeginningSunday(firstDay);
       const numOfDates = 42;
       return { startingDay, numOfDates };
     },
@@ -84,17 +84,13 @@ export function getDatesWithCurrentMonth(
   fullYear: number,
   month: number
 ): DateWithValidation[] {
-  const dateArray = makeDateArrayFromStartingMonth(fullYear, month);
+  const dateArrayProc = makeDateArrayFromStartingMonth(fullYear, month);
   const transform = transformDateWithValidation(
     transformDate,
     (date) => date.getMonth() === month
   );
-  return dateArray(transform);
+  return dateArrayProc(transform);
 }
-
-type DatesWithValidationFunc = {
-  (fullYear: number, month: number): DateWithValidation[];
-};
 
 export function makeDatesAfterMonth(numOfMonth: number) {
   return (fullYear: number, month: number) => {

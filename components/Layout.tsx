@@ -16,9 +16,9 @@ import {
   ChevronDownIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
-import SelectClass from "../../components/selectClass";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import SelectClass from "./selectClass";
 
 const navigation = [
   // { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
@@ -44,7 +44,10 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Layout() {
+type LayoutProps = {
+  children?: React.ReactNode;
+};
+export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
 
@@ -117,7 +120,7 @@ export default function Layout() {
                       <ul role='list' className='-mx-2 space-y-1'>
                         {navigation.map((item) => (
                           <li key={item.name}>
-                            <a
+                            <Link
                               href={item.href}
                               className={classNames(
                                 item.current
@@ -136,7 +139,7 @@ export default function Layout() {
                                 aria-hidden='true'
                               />
                               {item.name}
-                            </a>
+                            </Link>
                           </li>
                         ))}
                       </ul>
@@ -226,7 +229,7 @@ export default function Layout() {
 
           <main className='py-10'>
             <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-              {/* Replace with your content */}
+              {children}
             </div>
           </main>
         </div>

@@ -1,9 +1,10 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { DateWithValidation, transformDate } from "../lib/makeDateArray";
-import makeMonthFromNumber from "../lib/makeMonthFromNumber";
+import { DateWithValidation, transformDate } from "../src/lib/makeDateArray";
+import makeMonthFromNumber from "../src/lib/makeMonthFromNumber";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { pipe } from "../lib/util";
-import { makeDatesAfterMonth } from "../lib/makeDateArray";
+import { pipe } from "../src/lib/util";
+import { makeDatesAfterMonth } from "../src/lib/makeDateArray";
+import { SetterOrUpdater } from "recoil";
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(" ");
@@ -12,6 +13,10 @@ type CalendarProps = {
   days: DateWithValidation[];
   fullYear?: number;
   month: number;
+  startDay?: string;
+  setStartDay?: SetterOrUpdater<string>;
+  endDay?: string;
+  setEndDay?: SetterOrUpdater<string>;
 };
 
 // 월을 바꾸었을 때 달력을 다시 그리기 위한 hook
@@ -45,13 +50,17 @@ export default function Calendar({
   days: initDays,
   month: initMonth,
   fullYear: initFullYear,
+  setStartDay,
+  startDay,
+  endDay,
+  setEndDay,
 }: CalendarProps) {
   const [days, setDays] = useState<DateWithValidation[]>(initDays);
   const { makeDates, moveStep, month, fullYear } = useShiftMonth(
     initMonth,
     initFullYear as number
   );
-  const [selectedDate, setSelectedDate] = useState<number | null>();
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   // today 표시하기
   pipe(
@@ -67,7 +76,7 @@ export default function Calendar({
   const onClick = (dayIdx: number) => {
     days.forEach((day) => (day.isSelected = false));
     dayIdx ? (days[dayIdx].isSelected = true) : null;
-    setSelectedDate(dayIdx);
+    setSelectedDate(days[dayIdx].date);
   };
 
   const onClickArrow = (direction: string) => {
@@ -77,6 +86,13 @@ export default function Calendar({
   useEffect(() => {
     setDays(() => makeDates(fullYear, month));
   }, [month, fullYear, makeDates]);
+  useEffect(() => {
+    setStartDay
+      ? setStartDay(selectedDate)
+      : setEndDay
+      ? setEndDay(selectedDate)
+      : null;
+  }, [selectedDate, setStartDay, setEndDay]);
 
   return (
     <div className='mt-10 w-full text-center lg:col-start-8 lg:col-end-13 lg:row-start-1 lg:mt-9 xl:col-start-9'>

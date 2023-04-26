@@ -1,16 +1,29 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { CheckIcon } from "@heroicons/react/24/outline";
-import { DateWithValidation } from "../lib/makeDateArray";
+import { DateWithValidation } from "../src/lib/makeDateArray";
 import Calendar from "./calendar";
 import { useRouter } from "next/router";
+import { SetterOrUpdater } from "recoil";
 
 type ModalProps = {
   days: DateWithValidation[];
   fullYear?: number;
   month: number;
+  startDay?: string;
+  setStartDay?: SetterOrUpdater<string>;
+  endDay?: string;
+  setEndDay?: SetterOrUpdater<string>;
 };
-export default function Modal({ fullYear, days, month }: ModalProps) {
+export default function Modal({
+  fullYear,
+  days,
+  month,
+  setStartDay,
+  startDay,
+  endDay,
+  setEndDay,
+}: ModalProps) {
   const [open, setOpen] = useState(true);
   const router = useRouter();
   const onClick = () => {
@@ -45,7 +58,17 @@ export default function Modal({ fullYear, days, month }: ModalProps) {
               leaveTo='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
             >
               <Dialog.Panel className='relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6'>
-                <Calendar {...{ fullYear, days, month }} />
+                <Calendar
+                  {...{
+                    fullYear,
+                    days,
+                    month,
+                    startDay,
+                    setStartDay,
+                    endDay,
+                    setEndDay,
+                  }}
+                />
                 <div className='mt-5 sm:mt-6'>
                   <button
                     type='button'

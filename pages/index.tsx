@@ -1,8 +1,10 @@
-import type { NextPage } from "next";
-import Layout from "./home";
+import Layout from "../components/Layout";
 
 function Home() {
-  return <Layout />;
+  return (   
+      <Layout />
+   
+  );
 }
 
 export default Home;

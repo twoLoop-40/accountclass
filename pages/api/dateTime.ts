@@ -1,7 +1,7 @@
 import {
   getDatesWithCurrentMonth,
   makeDatesAfterMonth,
-} from "../../lib/makeDateArray";
+} from "../../src/lib/makeDateArray";
 
 // test
 function testTime() {
