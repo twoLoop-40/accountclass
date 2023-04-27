@@ -1,29 +1,25 @@
 import { Fragment, useState } from "react";
-import { Dialog, Menu, Transition } from "@headlessui/react";
+import { Dialog, Transition } from "@headlessui/react";
 import {
+  ArrowDownTrayIcon,
   Bars3Icon,
-  BellIcon,
   CalendarIcon,
-  ChartPieIcon,
-  Cog6ToothIcon,
-  DocumentDuplicateIcon,
-  FolderIcon,
-  HomeIcon,
-  UsersIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import {
-  ChevronDownIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/20/solid";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import SelectClass from "./selectClass";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import {
+  endDayState,
+  lectureNameState,
+  startDayState,
+  studentAttendanceCountState,
+} from "../src/recoil/atoms";
+import { fetchData } from "../src/lib/util";
+import { ClassCount } from "../pages/api/studentCount";
 
 const navigation = [
-  // { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-  // { name: "Team", href: "#", icon: UsersIcon, current: false },
-  // { name: "Projects", href: "#", icon: FolderIcon, current: false },
   {
     name: "수업 시작",
     href: "/modal/startDay",
@@ -36,8 +32,6 @@ const navigation = [
     icon: CalendarIcon,
     current: false,
   },
-  // { name: "Documents", href: "#", icon: DocumentDuplicateIcon, current: false },
-  // { name: "Reports", href: "#", icon: ChartPieIcon, current: false },
 ];
 
 function classNames(...classes: string[]) {
@@ -51,16 +45,31 @@ export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
 
+  const startDay = useRecoilValue(startDayState);
+  const endDay = useRecoilValue(endDayState);
+  const lecture = useRecoilValue(lectureNameState);
+  const setLectureAttendanceCount = useSetRecoilState(
+    studentAttendanceCountState
+  );
+  const onSendDateClick = async () => {
+    const url = "api/studentCount";
+    const params = {
+      startDay,
+      endDay,
+      sheetName: lecture.lectureName,
+    };
+    try {
+      const res = await fetchData<string, ClassCount[]>(url, params);
+      if (res) {
+        setLectureAttendanceCount(res);
+      }
+    } catch (err) {
+      console.log("Error:", err);
+    }
+  };
+
   return (
     <>
-      {/*
-        This example requires updating your template:
-
-        ```
-        <html class="h-full bg-white">
-        <body class="h-full">
-        ```
-      */}
       <div>
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog
@@ -142,6 +151,12 @@ export default function Layout({ children }: LayoutProps) {
                             </Link>
                           </li>
                         ))}
+                        <li className='group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700'>
+                          {startDay ? `수업시작일: ${startDay}` : null}
+                        </li>
+                        <li className='group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700'>
+                          {endDay ? `수업종료일: ${endDay}` : null}
+                        </li>
                       </ul>
                     </nav>
                   </div>
@@ -181,6 +196,12 @@ export default function Layout({ children }: LayoutProps) {
                     </Link>
                   </li>
                 ))}
+                <li className='group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700'>
+                  {startDay ? `수업시작일: ${startDay}` : null}
+                </li>
+                <li className='group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700'>
+                  {endDay ? `수업종료일: ${endDay}` : null}
+                </li>
               </ul>
             </nav>
           </div>
@@ -208,11 +229,12 @@ export default function Layout({ children }: LayoutProps) {
                 <SelectClass />
                 <div className='flex items-center gap-x-4 lg:gap-x-6'>
                   <button
+                    onClick={onSendDateClick}
                     type='button'
                     className='-m-2.5 p-2.5 text-gray-400 hover:text-gray-500'
                   >
                     <span className='sr-only'>View notifications</span>
-                    <BellIcon className='h-6 w-6' aria-hidden='true' />
+                    <ArrowDownTrayIcon className='h-6 w-6' aria-hidden='true' />
                   </button>
 
                   {/* Separator */}

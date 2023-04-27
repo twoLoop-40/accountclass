@@ -1,4 +1,5 @@
 import { DefaultValue, atom, selector } from "recoil";
+import { StudentLectureCount } from "../../components/studentList";
 type EffectModifier<T> = {
   setSelf: (newValue: T) => void;
   onSet: (
@@ -6,12 +7,12 @@ type EffectModifier<T> = {
   ) => void;
 };
 
-function localStorageEffect(key: string) {
+function localStorageEffect<T>(key: string) {
   let savedValue: string | null;
   if (typeof window !== "undefined") {
     savedValue = localStorage.getItem(key);
   }
-  return <T>({ setSelf, onSet }: EffectModifier<T>) => {
+  return ({ setSelf, onSet }: EffectModifier<T>) => {
     if (savedValue != null) {
       setSelf(JSON.parse(savedValue));
     }
@@ -26,11 +27,30 @@ function localStorageEffect(key: string) {
 export const startDayState = atom<string>({
   key: "startDayState",
   default: "",
-  effects: [localStorageEffect("startDayStorage")],
+  // effects: [localStorageEffect("startDayStateStorage")],
 });
 
 export const endDayState = atom<string>({
   key: "endDayState",
   default: "",
-  effects: [localStorageEffect("endDayStorage")],
+  // effects: [localStorageEffect("endDayStateStorage")],
+});
+
+type Lecture = {
+  id: number;
+  lectureName: string;
+};
+
+const lectureNameInit: Lecture[] = [
+  { id: 0, lectureName: "수업을 선택하세요" },
+];
+
+export const lectureNameState = atom<Lecture>({
+  key: "lectureState",
+  default: lectureNameInit[0],
+});
+
+export const studentAttendanceCountState = atom<StudentLectureCount[]>({
+  key: "studentAttendanceCountState",
+  default: [],
 });

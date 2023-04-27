@@ -40,9 +40,11 @@ function useShiftMonth(initMonth: number, initFullYear: number) {
           : setMonth(() => month + 1);
       }
     },
-    [month, fullYear, step]
+    [fullYear, month, step]
   );
-  const makeDates = useMemo(() => makeDatesAfterMonth(step), [step]);
+  const makeDates = useMemo(() => {
+    return makeDatesAfterMonth(step);
+  }, [step]);
   return { makeDates, moveStep, month, fullYear };
 }
 
@@ -84,8 +86,9 @@ export default function Calendar({
   };
 
   useEffect(() => {
-    setDays(() => makeDates(fullYear, month));
-  }, [month, fullYear, makeDates]);
+    initFullYear ? setDays(() => makeDates(initFullYear, initMonth)) : null;
+  }, [initFullYear, initMonth, makeDates]);
+
   useEffect(() => {
     setStartDay
       ? setStartDay(selectedDate)

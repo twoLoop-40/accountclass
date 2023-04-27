@@ -1,3 +1,5 @@
+import axios from "axios";
+
 // 함수 파이프 라인으로 연결하고 에러 처리하기
 export function pipe(...fns: any[]) {
   return (x: any) => {
@@ -20,5 +22,34 @@ export function parallel<T, U>(...fns: ((arg: T) => U)[]) {
     } catch (err) {
       console.error("Error Occured in parallel:", err);
     }
+  };
+}
+
+type AxiosParams<T> = {
+  [key: string]: T;
+};
+// fetchdata axios로 데이터 불러오는 함수
+export async function fetchData<T, U>(url: string, params?: AxiosParams<T>) {
+  try {
+    const response = await axios.get(url, { params: { ...params } });
+    return response.data as U;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export function classNames(...classes: any[]) {
+  return classes.filter(Boolean).join(" ");
+}
+
+export function addLocalStorage<T>(key: string, proc: (arg: T) => void) {
+  return (arg: T) => {
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      const savedValue = JSON.parse(saved);
+      saved !== arg ? localStorage.setItem(key, JSON.stringify(arg)) : null;
+    }
+    localStorage.setItem(key, JSON.stringify(arg));
+    return proc(arg);
   };
 }
