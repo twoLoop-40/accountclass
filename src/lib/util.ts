@@ -1,8 +1,8 @@
 import axios from "axios";
 
 // 함수 파이프 라인으로 연결하고 에러 처리하기
-export function pipe(...fns: any[]) {
-  return (x: any) => {
+export function pipe<T, U>(...fns: any[]): (arg: T) => U {
+  return (x: T) => {
     try {
       return fns.reduce((v, f) => f(v), x);
     } catch (e) {
@@ -52,4 +52,10 @@ export function addLocalStorage<T>(key: string, proc: (arg: T) => void) {
     localStorage.setItem(key, JSON.stringify(arg));
     return proc(arg);
   };
+}
+
+export function activePageClassName(active: boolean): string {
+  return active
+    ? "relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+    : "relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex";
 }
