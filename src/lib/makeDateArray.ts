@@ -41,9 +41,13 @@ function makeDateArray({
   return dateArray;
 }
 
+interface InputDate {
+  fullYear: number;
+  month: number;
+}
 // date => makeDateArray
 function makeDateArrayFromStartingMonth(fullYear: number, month: number) {
-  const dateArray: Date[] = pipe(
+  const dateArray: Date[] = pipe<InputDate, Date[]>(
     getFirstDay,
     (firstDay: Date) => {
       const startingDay = getBeginningSunday(firstDay);
