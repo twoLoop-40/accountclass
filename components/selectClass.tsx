@@ -19,7 +19,7 @@ function useLectureName() {
   const [lectureNameList, setLectureNameList] = useState<Lecture[]>();
   const url = "api/getLectureNameList";
   useEffect(() => {
-    fetchData<unknown, Lecture[]>(url)
+    fetchData<string, Lecture[]>(url)
       .then((nameList: Lecture[] | undefined) => {
         nameList
           ? setLectureNameList(() => [...nameList])

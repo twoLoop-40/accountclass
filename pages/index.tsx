@@ -1,15 +1,19 @@
 import { useRecoilValue } from "recoil";
-import Layout from "../components/Layout";
+import Layout from "../components/frame";
 import StudentCount from "../components/studentList";
-import { studentAttendanceCountState } from "../src/recoil/atoms";
+import { loadingState, studentAttendanceCountState } from "../src/recoil/atoms";
+import Loading from "../components/loading";
 
 function Home() {
   const studentsLectureCount = useRecoilValue(studentAttendanceCountState);
+  const isMainLoading = useRecoilValue(loadingState);
   return (
     <Layout>
-      {studentsLectureCount.length > 0 ? (
+      {isMainLoading ? (
+        <Loading />
+      ) : (
         <StudentCount {...{ studentsLectureCount }} />
-      ) : null}
+      )}
     </Layout>
   );
 }

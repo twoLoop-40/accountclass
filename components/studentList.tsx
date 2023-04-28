@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { activePageClassName, pipe } from "../src/lib/util";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
@@ -7,7 +7,10 @@ type PageStep = 1 | -1;
 function usePagination(studentsList: StudentLectureCount[], perPage?: number) {
   perPage = perPage ? perPage : 10;
   const [currentPage, setCurrentPage] = useState(1);
-  const maxPage = Math.ceil(studentsList.length / (perPage as number));
+  const maxPage = useMemo(
+    () => Math.ceil(studentsList.length / (perPage as number)),
+    [studentsList, perPage]
+  );
   const getCurrentDataOfCurrentPage: (page: number) => StudentLectureCount[] =
     pipe(
       (page: number) => [

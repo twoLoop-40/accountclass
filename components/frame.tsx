@@ -6,28 +6,29 @@ import {
   CalendarIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { useRouter } from "next/router";
+import { useMutation } from "react-query";
 import Link from "next/link";
 import SelectClass from "./selectClass";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import {
   endDayState,
   lectureNameState,
+  loadingState,
   startDayState,
   studentAttendanceCountState,
 } from "../src/recoil/atoms";
+import { StudentLectureCount } from "./studentList";
 import { fetchData } from "../src/lib/util";
-import { ClassCount } from "../pages/api/studentCount";
 
 const navigation = [
   {
-    name: "수업 시작",
+    name: "수업 시작 날짜",
     href: "/modal/startDay",
     icon: CalendarIcon,
     current: false,
   },
   {
-    name: "수업 마침",
+    name: "수업 종료 날짜",
     href: "/modal/endDay",
     icon: CalendarIcon,
     current: false,
@@ -41,28 +42,44 @@ function classNames(...classes: string[]) {
 type LayoutProps = {
   children?: React.ReactNode;
 };
+
+interface FetchDataParams {
+  startDay: string;
+  endDay: string;
+  sheetName: string;
+}
 export default function Layout({ children }: LayoutProps) {
+  const url = "api/studentCount";
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const router = useRouter();
+  const setLectureAttendanceCount = useSetRecoilState(
+    studentAttendanceCountState
+  );
+
+  const setIsMainLoading = useSetRecoilState(loadingState);
+
+  const { mutateAsync, isLoading } = useMutation(
+    (params: FetchDataParams) =>
+      fetchData<FetchDataParams, StudentLectureCount[]>(url, params),
+    {
+      onError: (err) => {
+        console.log(err);
+      },
+    }
+  );
 
   const startDay = useRecoilValue(startDayState);
   const endDay = useRecoilValue(endDayState);
   const lecture = useRecoilValue(lectureNameState);
-  const setLectureAttendanceCount = useSetRecoilState(
-    studentAttendanceCountState
-  );
   const onSendDateClick = async () => {
-    const url = "api/studentCount";
     const params = {
       startDay,
       endDay,
       sheetName: lecture.lectureName,
     };
     try {
-      const res = await fetchData<string, ClassCount[]>(url, params);
-      if (res) {
-        setLectureAttendanceCount(res);
-      }
+      const result = await mutateAsync(params);
+      setIsMainLoading(() => isLoading);
+      result && !isLoading ? setLectureAttendanceCount(result) : null;
     } catch (err) {
       console.log("Error:", err);
     }

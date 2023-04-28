@@ -25,11 +25,11 @@ export function parallel<T, U>(...fns: ((arg: T) => U)[]) {
   };
 }
 
-type AxiosParams<T> = {
-  [key: string]: T;
-};
 // fetchdata axios로 데이터 불러오는 함수
-export async function fetchData<T, U>(url: string, params?: AxiosParams<T>) {
+export async function fetchData<T, U>(
+  url: string,
+  params?: T
+): Promise<U | undefined> {
   try {
     const response = await axios.get(url, { params: { ...params } });
     return response.data as U;

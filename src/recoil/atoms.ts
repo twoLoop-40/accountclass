@@ -54,3 +54,8 @@ export const studentAttendanceCountState = atom<StudentLectureCount[]>({
   key: "studentAttendanceCountState",
   default: [],
 });
+
+export const loadingState = atom<boolean>({
+  key: "loadingState",
+  default: false,
+});
