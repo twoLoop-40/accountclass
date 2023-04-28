@@ -19,6 +19,7 @@ import {
 } from "../src/recoil/atoms";
 import { StudentLectureCount } from "./studentList";
 import { fetchData } from "../src/lib/util";
+import Loading from "./loading";
 
 const navigation = [
   {
@@ -55,8 +56,6 @@ export default function Layout({ children }: LayoutProps) {
     studentAttendanceCountState
   );
 
-  const setIsMainLoading = useSetRecoilState(loadingState);
-
   const { mutateAsync, isLoading } = useMutation(
     (params: FetchDataParams) =>
       fetchData<FetchDataParams, StudentLectureCount[]>(url, params),
@@ -78,7 +77,6 @@ export default function Layout({ children }: LayoutProps) {
     };
     try {
       const result = await mutateAsync(params);
-      setIsMainLoading(() => isLoading);
       result && !isLoading ? setLectureAttendanceCount(result) : null;
     } catch (err) {
       console.log("Error:", err);
@@ -267,8 +265,8 @@ export default function Layout({ children }: LayoutProps) {
           </div>
 
           <main className='py-10'>
-            <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-              {children}
+            <div className='mx-auto flex justify-center px-4 sm:px-6 lg:max-w-7xl lg:px-8'>
+              {isLoading ? <Loading /> : children}
             </div>
           </main>
         </div>

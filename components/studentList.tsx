@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { activePageClassName, pipe } from "../src/lib/util";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
@@ -7,10 +7,15 @@ type PageStep = 1 | -1;
 function usePagination(studentsList: StudentLectureCount[], perPage?: number) {
   perPage = perPage ? perPage : 10;
   const [currentPage, setCurrentPage] = useState(1);
-  const maxPage = useMemo(
-    () => Math.ceil(studentsList.length / (perPage as number)),
-    [studentsList, perPage]
-  );
+  const [maxPage, setMaxPage] = useState(0);
+  useEffect(() => {
+    studentsList
+      ? setMaxPage(() => Math.ceil(studentsList.length / (perPage as number)))
+      : null;
+    return () => {
+      setMaxPage(0);
+    };
+  }, [setMaxPage, studentsList, perPage]);
   const getCurrentDataOfCurrentPage: (page: number) => StudentLectureCount[] =
     pipe(
       (page: number) => [
@@ -58,6 +63,7 @@ export default function StudentCount({
     maxPage,
     onPageMoveClick,
   } = usePagination(studentsLectureCount, 15);
+  console.log(maxPage);
   return (
     <div className='px-4 sm:px-6 lg:px-8'>
       <div className='sm:flex sm:items-center'>
