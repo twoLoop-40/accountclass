@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { activePageClassName, pipe } from "../src/lib/util";
+import { pipe } from "../src/lib/util";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import PageButtons from "./pageButtons";
 
 type PageStep = 1 | -1;
 
@@ -8,22 +9,17 @@ function usePagination(studentsList: StudentLectureCount[], perPage?: number) {
   perPage = perPage ? perPage : 10;
   const [currentPage, setCurrentPage] = useState(1);
   const [maxPage, setMaxPage] = useState(0);
-  useEffect(() => {
-    studentsList
-      ? setMaxPage(() => Math.ceil(studentsList.length / (perPage as number)))
-      : null;
-    return () => {
-      setMaxPage(0);
-    };
-  }, [setMaxPage, studentsList, perPage]);
+
   const getCurrentDataOfCurrentPage: (page: number) => StudentLectureCount[] =
     pipe(
       (page: number) => [
         (page - 1) * (perPage as number),
         page * (perPage as number),
       ],
-      ([start, end]: [start: number, end: number]) =>
-        studentsList.slice(start, end)
+      ([start, end]: [start: number, end: number]) => {
+        const result = studentsList.slice(start, end);
+        return result;
+      }
     );
   const onCurrentPageClick = (page: number) => {
     setCurrentPage(() => page);
@@ -41,6 +37,7 @@ function usePagination(studentsList: StudentLectureCount[], perPage?: number) {
     onPageMoveClick,
     getCurrentDataOfCurrentPage,
     maxPage,
+    setMaxPage,
   };
 }
 export type StudentLectureCount = {
@@ -56,13 +53,27 @@ type StudentCountProps = {
 export default function StudentCount({
   studentsLectureCount,
 }: StudentCountProps) {
+  const PER_PAGE = 15;
   const {
     currentPage,
     getCurrentDataOfCurrentPage,
     onCurrentPageClick,
     maxPage,
+    setMaxPage,
     onPageMoveClick,
-  } = usePagination(studentsLectureCount, 15);
+  } = usePagination(studentsLectureCount, PER_PAGE);
+
+  useEffect(() => {
+    studentsLectureCount
+      ? setMaxPage(() => {
+          const newMaxPage = Math.ceil(studentsLectureCount.length / PER_PAGE);
+          return newMaxPage;
+        })
+      : null;
+    return () => {
+      setMaxPage(0);
+    };
+  }, [setMaxPage, studentsLectureCount]);
   console.log(maxPage);
   return (
     <div className='px-4 sm:px-6 lg:px-8'>
@@ -163,35 +174,33 @@ export default function StudentCount({
                 </button>
               </div>
             </div>
-            <div className='hidden sm:flex sm:flex-1 sm:items-center sm:justify-between'>
+            <div className='hidden sm:flex sm:flex-1 sm:items-center sm:justify-end'>
               <nav
                 className='isolate inline-flex -space-x-px rounded-md shadow-sm'
                 aria-label='Pagination'
               >
-                <a
+                {/* <a
                   href='#'
                   className='relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
                 >
                   <span className='sr-only'>Previous</span>
                   <ChevronLeftIcon className='h-5 w-5' aria-hidden='true' />
-                </a>
-                {/* Current: "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", Default: "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0" */}
-                {Array.from({ length: maxPage }, (_, i) => (
-                  <button
-                    className={activePageClassName(i + 1 === currentPage)}
-                    key={i}
-                    onClick={() => onCurrentPageClick(i + 1)}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <a
+                </a> */}
+                <div>
+                  <PageButtons
+                    currentPage={currentPage}
+                    buttonNumber={maxPage}
+                    onCurrentPageClick={onCurrentPageClick}
+                  />
+                </div>
+
+                {/* <a
                   href='#'
                   className='relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
                 >
                   <span className='sr-only'>Next</span>
                   <ChevronRightIcon className='h-5 w-5' aria-hidden='true' />
-                </a>
+                </a> */}
               </nav>
             </div>
           </div>

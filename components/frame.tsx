@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
   ArrowDownTrayIcon,
@@ -6,19 +6,19 @@ import {
   CalendarIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import SelectClass from "./selectClass";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import {
   endDayState,
   lectureNameState,
-  loadingState,
   startDayState,
   studentAttendanceCountState,
 } from "../src/recoil/atoms";
+
 import { StudentLectureCount } from "./studentList";
-import { fetchData } from "../src/lib/util";
+import { classNames, pipe, fetchData } from "../src/lib/util";
 import Loading from "./loading";
 
 const navigation = [
@@ -36,8 +36,17 @@ const navigation = [
   },
 ];
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
+function useLocalStorage(key: string, value: string) {
+  const [saved, setSaved] = useState("");
+  const getSavedValue = pipe(
+    (storageKey: string) => localStorage.getItem(storageKey),
+    (stored: string | null) => (stored ? setSaved(JSON.parse(stored)) : null)
+  );
+
+  useEffect(() => {
+    getSavedValue(key);
+  }, [key, getSavedValue]);
+  return saved ? saved : value;
 }
 
 type LayoutProps = {
@@ -56,18 +65,17 @@ export default function Layout({ children }: LayoutProps) {
     studentAttendanceCountState
   );
 
-  const { mutateAsync, isLoading } = useMutation(
-    (params: FetchDataParams) =>
+  const { mutateAsync, isLoading, error } = useMutation({
+    mutationFn: (params: FetchDataParams) =>
       fetchData<FetchDataParams, StudentLectureCount[]>(url, params),
-    {
-      onError: (err) => {
-        console.log(err);
-      },
-    }
-  );
+  });
 
   const startDay = useRecoilValue(startDayState);
   const endDay = useRecoilValue(endDayState);
+
+  const startDayWithStorage = useLocalStorage("startDayStorage", startDay);
+  const endDayWithStorage = useLocalStorage("endDayStorage", endDay);
+
   const lecture = useRecoilValue(lectureNameState);
   const onSendDateClick = async () => {
     const params = {
@@ -79,7 +87,7 @@ export default function Layout({ children }: LayoutProps) {
       const result = await mutateAsync(params);
       result && !isLoading ? setLectureAttendanceCount(result) : null;
     } catch (err) {
-      console.log("Error:", err);
+      console.log("Error:", error);
     }
   };
 
@@ -167,10 +175,12 @@ export default function Layout({ children }: LayoutProps) {
                           </li>
                         ))}
                         <li className='group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700'>
-                          {startDay ? `수업시작일: ${startDay}` : null}
+                          {startDayWithStorage
+                            ? `수업시작일: ${startDayWithStorage}`
+                            : null}
                         </li>
                         <li className='group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700'>
-                          {endDay ? `수업종료일: ${endDay}` : null}
+                          {endDayWithStorage ? `수업종료일: ${endDay}` : null}
                         </li>
                       </ul>
                     </nav>
@@ -265,7 +275,7 @@ export default function Layout({ children }: LayoutProps) {
           </div>
 
           <main className='py-10'>
-            <div className='mx-auto flex justify-center px-4 sm:px-6 lg:max-w-7xl lg:px-8'>
+            <div className='mx-auto px-4 sm:px-6 lg:max-w-7xl lg:px-8'>
               {isLoading ? <Loading /> : children}
             </div>
           </main>
