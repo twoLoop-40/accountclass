@@ -9,7 +9,12 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import SelectClass from "./selectClass";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import {
+  SetterOrUpdater,
+  useRecoilState,
+  useRecoilValue,
+  useSetRecoilState,
+} from "recoil";
 import {
   endDayState,
   lectureNameState,
@@ -20,6 +25,7 @@ import {
 import { StudentLectureCount } from "./studentList";
 import { classNames, pipe, fetchData } from "../src/lib/util";
 import Loading from "./loading";
+import { get } from "http";
 
 const navigation = [
   {
@@ -36,17 +42,13 @@ const navigation = [
   },
 ];
 
-function useLocalStorage(key: string, value: string) {
-  const [saved, setSaved] = useState("");
-  const getSavedValue = pipe(
-    (storageKey: string) => localStorage.getItem(storageKey),
-    (stored: string | null) => (stored ? setSaved(JSON.parse(stored)) : null)
-  );
-
+function useLocalStorage(key: string, setter: SetterOrUpdater<string>) {
   useEffect(() => {
-    getSavedValue(key);
-  }, [key, getSavedValue]);
-  return saved ? saved : value;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      setter(JSON.parse(saved));
+    }
+  }, [key, setter]);
 }
 
 type LayoutProps = {
@@ -70,11 +72,11 @@ export default function Layout({ children }: LayoutProps) {
       fetchData<FetchDataParams, StudentLectureCount[]>(url, params),
   });
 
-  const startDay = useRecoilValue(startDayState);
-  const endDay = useRecoilValue(endDayState);
+  const [startDay, setStartDay] = useRecoilState(startDayState);
+  const [endDay, setEndDay] = useRecoilState(endDayState);
 
-  const startDayWithStorage = useLocalStorage("startDayStorage", startDay);
-  const endDayWithStorage = useLocalStorage("endDayStorage", endDay);
+  useLocalStorage("startDayStorage", setStartDay);
+  useLocalStorage("endDayStorage", setEndDay);
 
   const lecture = useRecoilValue(lectureNameState);
   const onSendDateClick = async () => {
@@ -175,12 +177,10 @@ export default function Layout({ children }: LayoutProps) {
                           </li>
                         ))}
                         <li className='group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700'>
-                          {startDayWithStorage
-                            ? `수업시작일: ${startDayWithStorage}`
-                            : null}
+                          {startDay ? `수업시작일: ${startDay}` : null}
                         </li>
                         <li className='group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700'>
-                          {endDayWithStorage ? `수업종료일: ${endDay}` : null}
+                          {startDay ? `수업종료일: ${startDay}` : null}
                         </li>
                       </ul>
                     </nav>
